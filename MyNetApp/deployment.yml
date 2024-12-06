@@ -1,0 +1,32 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: MyNetApp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: MyNetApp
+  template:
+    metadata:
+      labels:
+        app: MyNetApp
+    spec:
+      containers:
+      - name: yourapp
+        image: bhhelloworld.azurecr.io/MyNetApp:v1
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: MyNetApp-service
+spec:
+  selector:
+    app: MyNetApp
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
