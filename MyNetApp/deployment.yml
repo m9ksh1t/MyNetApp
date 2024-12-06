@@ -13,7 +13,7 @@ spec:
         app: MyNetApp
     spec:
       containers:
-      - name: yourapp
+      - name: MyNetApp
         image: bhhelloworld.azurecr.io/MyNetApp:v1
         ports:
         - containerPort: 80
