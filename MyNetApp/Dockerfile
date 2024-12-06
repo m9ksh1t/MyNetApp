@@ -11,4 +11,4 @@ COPY output/ .
 EXPOSE 80
 
 # Specify the entry point for the application
-ENTRYPOINT ["dotnet", "YourProjectName.dll"]
+ENTRYPOINT ["dotnet", "MyNetApp.dll"]
