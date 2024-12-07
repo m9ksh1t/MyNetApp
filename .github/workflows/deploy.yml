@@ -29,6 +29,11 @@ jobs:
       - name: Publish project
         run: dotnet publish -c Release -o ./MyNetApp/output
 
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       # Step 5: Create Docker image
       - name: Build Docker image
         run: |
