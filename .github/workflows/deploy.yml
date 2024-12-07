@@ -32,7 +32,7 @@ jobs:
       # Step 5: Create Docker image
       - name: Build Docker image
         run: |
-          docker build -t bhhelloworld.azurecr.io/myapp:${{ github.sha }} ./output
+          docker build -t bhhelloworld.azurecr.io/myapp:${{ github.sha }} ./MyNetApp
 
       # Step 6: Log in to ACR
       - name: Log in to Azure Container Registry
