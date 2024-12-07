@@ -60,7 +60,7 @@ jobs:
       # Deploy to AKS
       - name: Deploy to AKS
         run: |
-          kubectl apply -f MyNetApp/deployment.yaml
+          kubectl apply -f ./MyNetApp/deployment.yaml
 
       # Step 9: Deploy to App Service (Optional)
       - name: Deploy to Azure Web App Service
