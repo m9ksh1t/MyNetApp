@@ -65,7 +65,7 @@ jobs:
     # Build Docker Image
     - name: Build Docker Image
       run: |
-        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/mydotnetapp:${{ github.sha }} ./publish
+        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/mydotnetapp:${{ github.sha }} ./publish-folder
 
     # Push Docker Image to ACR
     - name: Push Docker Image
@@ -94,7 +94,39 @@ jobs:
       with:
         version: 'latest'
 
-    # Deploy to AKS
+    # Create Kubernetes deployment
     - name: Deploy to AKS
       run: |
-        kubectl apply -f deployment.yaml
+        echo "
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: my-dotnet-app
+        spec:
+          replicas: 2
+          selector:
+            matchLabels:
+              app: my-dotnet-app
+          template:
+            metadata:
+              labels:
+                app: my-dotnet-app
+            spec:
+              containers:
+              - name: my-dotnet-app
+                image: ${{ secrets.ACR_NAME }}.azurecr.io/mydotnetapp:${{ github.sha }}
+                ports:
+                - containerPort: 80
+        ---
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: my-dotnet-app-service
+        spec:
+          type: LoadBalancer
+          ports:
+          - port: 80
+            targetPort: 80
+          selector:
+            app: my-dotnet-app
+        " | kubectl apply -f -
