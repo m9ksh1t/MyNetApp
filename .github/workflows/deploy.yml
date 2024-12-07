@@ -23,7 +23,7 @@ jobs:
 
       # Step 3: Build the application
       - name: Build project
-        run: dotnet build --configuration Release -o 
+        run: dotnet build --configuration Release
 
       # Step 4: Publish the artifact
       - name: Publish project
@@ -32,7 +32,7 @@ jobs:
       # Step 5: Create Docker image
       - name: Build Docker image
         run: |
-          docker build -t bhhelloworld.azurecr.io/myapp:${{ github.sha }} ./output
+          docker build -t bhhelloworld.azurecr.io/myapp:${{ github.sha }} ./MyNetApp/bin/Release/net8.0/
 
       # Step 6: Log in to ACR
       - name: Log in to Azure Container Registry
