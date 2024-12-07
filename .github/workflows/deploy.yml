@@ -27,7 +27,7 @@ jobs:
 
       # Step 4: Publish the artifact
       - name: Publish project
-        run: dotnet publish -c Release -o output
+        run: dotnet publish -c Release -o ./output
 
       # Step 5: Create Docker image
       - name: Build Docker image
