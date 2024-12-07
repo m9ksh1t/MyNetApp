@@ -38,7 +38,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: publish-folder
-        path: ./publish
+        path: ./output
 
   build-and-push-container:
     runs-on: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
     # Build Docker Image
     - name: Build Docker Image
       run: |
-        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/mydotnetapp:${{ github.sha }} ./publish-folder
+        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/mydotnetapp:${{ github.sha }} ./output
 
     # Push Docker Image to ACR
     - name: Push Docker Image
