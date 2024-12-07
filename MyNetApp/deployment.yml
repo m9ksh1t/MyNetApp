@@ -1,32 +1,33 @@
-﻿apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: MyNetApp
+  name: my-dotnet-app
+  labels:
+    app: my-dotnet-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: MyNetApp
+      app: my-dotnet-app
   template:
     metadata:
       labels:
-        app: MyNetApp
+        app: my-dotnet-app
     spec:
       containers:
-      - name: MyNetApp
-        image: bhhelloworld.azurecr.io/MyNetApp:v1
+      - name: my-dotnet-app
+        image: bhhelloworld.azurecr.io/mydotnetapp:latest
         ports:
         - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: MyNetApp-service
+  name: my-dotnet-app-service
 spec:
-  selector:
-    app: MyNetApp
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80
   type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: my-dotnet-app
