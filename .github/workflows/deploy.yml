@@ -48,6 +48,11 @@ jobs:
       - name: Push Docker image to ACR
         run: docker push bhhelloworld.azurecr.io/myapp:${{ github.sha }}
 
+      # Install kubectl
+      - name: Install kubectl
+        run: |
+          az aks install-cli
+
       # Step 8: Deploy to AKS
       - name: Set up Azure CLI
         uses: azure/cli@v1
