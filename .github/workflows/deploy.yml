@@ -52,14 +52,15 @@ jobs:
       - name: Install kubectl
         run: |
           az aks install-cli
+    # Get AKS credentials
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
 
-      # Step 8: Deploy to AKS
-      - name: Set up Azure CLI
-        uses: azure/cli@v1
-        with:
-          inlineScript: |
-            az aks get-credentials --resource-group myResourceGroup --name myAKSCluster
-            kubectl apply -f deployment.yaml
+      # Deploy to AKS
+      - name: Deploy to AKS
+        run: |
+          kubectl apply -f deployment.yaml
 
       # Step 9: Deploy to App Service (Optional)
       - name: Deploy to Azure Web App Service
