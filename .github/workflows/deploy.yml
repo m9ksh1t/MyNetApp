@@ -23,7 +23,7 @@ jobs:
 
       # Step 3: Build the application
       - name: Build project
-        run: dotnet build --configuration Release -o ./output
+        run: dotnet build --configuration Release -o 
 
       # Step 4: Publish the artifact
       - name: Publish project
