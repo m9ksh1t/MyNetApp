@@ -37,7 +37,7 @@ jobs:
       # Step 5: Create Docker image
       - name: Build Docker image
         run: |
-          docker build -t bhhelloworld.azurecr.io/myapp:latest ./MyNetApp
+          docker build -t bhhelloworld.azurecr.io/myapp:${{ github.sha }} ./MyNetApp
 
       # Step 6: Log in to ACR
       - name: Log in to Azure Container Registry
@@ -47,7 +47,7 @@ jobs:
       # Step 7: Push image to ACR
       - name: Push Docker image to ACR
         run: |
-          docker push bhhelloworld.azurecr.io/myapp:latest
+          docker push bhhelloworld.azurecr.io/myapp:${{ github.sha }}
       
       # Install kubectl
       - name: Install kubectl
@@ -61,7 +61,7 @@ jobs:
       # Deploy to AKS
       - name: Deploy to AKS
         run: |
-          kubectl apply -f deployment.yml
+          kubectl set image deployment/myapp-deployment myapp=bhhelloworld.azurecr.io/myapp:${{ github.sha }}
 
       # Step 9: Deploy to App Service (Optional)
       - name: Deploy to Azure Web App Service
@@ -69,4 +69,4 @@ jobs:
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           slot-name: production
-          images: bhhelloworld.azurecr.io/myapp:latest
+          images: bhhelloworld.azurecr.io/myapp:${{ github.sha }}
