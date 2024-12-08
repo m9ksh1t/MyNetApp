@@ -10,5 +10,5 @@ COPY output/ .
 # Expose the application port (adjust if your app uses a different port)
 EXPOSE 80
 
-# Specify the entry point for the application
+# Specify the entry point for the applicationnn
 ENTRYPOINT ["dotnet", "MyNetApp.dll"]
