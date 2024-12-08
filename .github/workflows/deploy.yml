@@ -66,6 +66,6 @@ jobs:
       - name: Deploy to Azure Web App Service
         uses: azure/webapps-deploy@v2
         with:
-          app-name: my-web-app-service
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           slot-name: production
           images: bhhelloworld.azurecr.io/myapp:${{ github.sha }}
