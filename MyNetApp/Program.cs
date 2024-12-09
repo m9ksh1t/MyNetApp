@@ -24,7 +24,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// change made here
 app.Urls.Add("http://*:80");
 
 app.Run();
