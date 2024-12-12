@@ -1,72 +1,46 @@
-name: Build and Deploy to AKS
-
+name: Build and Deploy to EKS
+ 
 on:
   push:
     branches:
       - master
   workflow_dispatch:
-
+ 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
+ 
     steps:
       # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
-
-      # Step 2: Setup .NET
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+ 
+      # Step 2: Setup AWS CLI
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v3
         with:
-          dotnet-version: '8.0' # Change to your target version
-
-      # Step 3: Build the application
-      - name: Build project
-        run: dotnet build --configuration Release -o ./MyNetApp/output
-
-      # Step 4: Publish the artifact
-      - name: Publish project
-        run: dotnet publish -c Release -o ./MyNetApp/output
-
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      # Step 5: Create Docker image
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+ 
+      # Step 3: Build Docker Image
       - name: Build Docker image
         run: |
-          docker build -t bhhelloworld.azurecr.io/myapp:${{ github.sha }} ./MyNetApp
-
-      # Step 6: Log in to ACR
-      - name: Log in to Azure Container Registry
+          docker build -t myapp:latest .
+ 
+      # Step 4: Push Image to Amazon ECR
+      - name: Login to Amazon ECR
         run: |
-          az acr login --name ${{ secrets.ACR_NAME }}
-
-      # Step 7: Push image to ACR
-      - name: Push Docker image to ACR
+          aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 994536024037.dkr.ecr.eu-north-1.amazonaws.com
+      - name: Tag and Push Docker Image
         run: |
-          docker push bhhelloworld.azurecr.io/myapp:${{ github.sha }}
-      
-      # Install kubectl
-      - name: Install kubectl
+          docker tag myapp:latest 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:latest
+          docker push 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:latest
+ 
+      # Step 5: Deploy to EKS
+      - name: Update kubeconfig for EKS
         run: |
-          az aks install-cli
-    # Get AKS credentials
-      - name: Get AKS credentials
+          aws eks update-kubeconfig --region eu-north-1 --name my-eks-cluster
+      - name: Deploy to EKS
         run: |
-          az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
-
-      # Deploy to AKS
-      - name: Deploy to AKS
-        run: |
-          kubectl set image deployment/myapp-deployment myapp=bhhelloworld.azurecr.io/myapp:${{ github.sha }}
-
-      # Step 9: Deploy to App Service (Optional)
-      - name: Deploy to Azure Web App Service
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          slot-name: production
-          images: bhhelloworld.azurecr.io/myapp:${{ github.sha }}
+          kubectl apply -f deployment.yml
