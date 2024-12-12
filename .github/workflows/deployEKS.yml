@@ -29,16 +29,7 @@ jobs:
       - name: Publish project
         run: dotnet publish -c Release -o ./MyNetApp/output
  
-  eks-deploy:
-    needs: build
-    runs-on: ubuntu-latest
- 
-    steps:
-      # Step 1: Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v3
- 
-      # Step 2: Configure AWS CLI
+      # Step 5: Configure AWS CLI
       - name: Configure AWS CLI
         uses: aws-actions/configure-aws-credentials@v3
         with:
@@ -46,12 +37,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
  
-      # Step 3: Build Docker image
+      # Step 6: Build Docker image
       - name: Build Docker image
         run: |
           docker build -t myapp:latest ./MyNetApp
  
-      # Step 4: Push Image to ECR
+      # Step 7: Push Image to ECR
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 994536024037.dkr.ecr.eu-north-1.amazonaws.com
@@ -60,7 +51,7 @@ jobs:
           docker tag myapp:latest 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ github.sha }}
           docker push 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ github.sha }}
  
-      # Step 5: Deploy to EKS
+      # Step 8: Deploy to EKS
       - name: Update kubeconfig for EKS
         run: |
           aws eks update-kubeconfig --region eu-north-1 --name my-eks-cluster
