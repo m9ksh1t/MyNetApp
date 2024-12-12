@@ -26,7 +26,7 @@ jobs:
       # Step 3: Build Docker Image
       - name: Build Docker image
         run: |
-          docker build -t myapp:latest .
+          docker build -t myapp:latest ./MyNetApp
  
       # Step 4: Push Image to Amazon ECR
       - name: Login to Amazon ECR
