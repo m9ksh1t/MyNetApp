@@ -5,10 +5,10 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 
 # Copy the published files into the container
-COPY ./MyNetApp/output/ .
+COPY output/ .
 
 # Expose the application port (adjust if your app uses a different port)
 EXPOSE 80
 
-# Specify the entry point for the applicationnn
+# Specify the entry point for the application
 ENTRYPOINT ["dotnet", "MyNetApp.dll"]
