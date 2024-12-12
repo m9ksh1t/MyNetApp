@@ -1,4 +1,4 @@
-name: Build and Deploy to EKS
+name: Build and Deploy to AKS and EKS
  
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
  
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
  
     steps:
@@ -15,7 +15,67 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
  
-      # Step 2: Setup AWS CLI
+      # Step 2: Setup .NET
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+ 
+      # Step 3: Build the application
+      - name: Build project
+        run: dotnet build --configuration Release -o ./MyNetApp/output
+ 
+      # Step 4: Publish the artifact
+      - name: Publish project
+        run: dotnet publish -c Release -o ./MyNetApp/output
+ 
+  aks-deploy:
+    needs: build
+    runs-on: ubuntu-latest
+ 
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+ 
+      # Step 2: Login to Azure
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+ 
+      # Step 3: Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t bhhelloworld.azurecr.io/myapp:${{ github.sha }} ./MyNetApp
+ 
+      # Step 4: Push image to ACR
+      - name: Push Docker image to ACR
+        run: |
+          az acr login --name ${{ secrets.ACR_NAME }}
+          docker push bhhelloworld.azurecr.io/myapp:${{ github.sha }}
+ 
+      # Step 5: Deploy to AKS
+      - name: Install kubectl
+        run: |
+          az aks install-cli
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
+      - name: Deploy to AKS
+        run: |
+          kubectl set image deployment/myapp-deployment myapp=bhhelloworld.azurecr.io/myapp:${{ github.sha }}
+ 
+  eks-deploy:
+    needs: build
+    runs-on: ubuntu-latest
+ 
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+ 
+      # Step 2: Configure AWS CLI
       - name: Configure AWS CLI
         uses: aws-actions/configure-aws-credentials@v3
         with:
@@ -23,19 +83,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
  
-      # Step 3: Build Docker Image
+      # Step 3: Build Docker image
       - name: Build Docker image
         run: |
           docker build -t myapp:latest ./MyNetApp
  
-      # Step 4: Push Image to Amazon ECR
+      # Step 4: Push Image to ECR
       - name: Login to Amazon ECR
         run: |
           aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 994536024037.dkr.ecr.eu-north-1.amazonaws.com
       - name: Tag and Push Docker Image
         run: |
-          docker tag myapp:latest 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:latest
-          docker push 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:latest
+          docker tag myapp:latest 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ github.sha }}
+          docker push 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ github.sha }}
  
       # Step 5: Deploy to EKS
       - name: Update kubeconfig for EKS
@@ -43,4 +103,4 @@ jobs:
           aws eks update-kubeconfig --region eu-north-1 --name my-eks-cluster
       - name: Deploy to EKS
         run: |
-          kubectl apply -f deployment.yml
+          kubectl apply -f eks-deployment.yml
