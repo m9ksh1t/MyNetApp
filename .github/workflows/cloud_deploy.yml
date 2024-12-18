@@ -14,8 +14,8 @@ on:
 jobs:
   call-reusable1:
     if: ${{ github.event.inputs.user_input == 'Azure' }}
-    uses: m9ksh1t/github-actions-demo/.github/workflows/deploy.yml@main
+    uses: m9ksh1t/MyNetApp/.github/workflows/deploy.yml@main
 
   call-reusable2:
     if: ${{ github.event.inputs.user_input == 'AWS' }}
-    uses: m9ksh1t/github-actions-demo/.github/workflows/deployEKS.yml@main
+    uses: m9ksh1t/MyNetApp/.github/workflows/deployEKS.yml@main
