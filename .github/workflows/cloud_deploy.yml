@@ -1,4 +1,4 @@
-name: Caller Workflow
+name: Deploy to AKS or EKS
 
 on:
   workflow_dispatch:
