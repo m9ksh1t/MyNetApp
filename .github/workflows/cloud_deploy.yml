@@ -1,0 +1,21 @@
+name: Caller Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      user_input:
+        description: "Click Azure to deploy in Azure Cloud or AWS to deploy in AWS"
+        required: true
+        type: choice
+        options:
+          - "Azure"
+          - "AWS"
+
+jobs:
+  call-reusable1:
+    if: ${{ github.event.inputs.user_input == 'Azure' }}
+    uses: m9ksh1t/github-actions-demo/.github/workflows/deploy.yml@main
+
+  call-reusable2:
+    if: ${{ github.event.inputs.user_input == 'AWS' }}
+    uses: m9ksh1t/github-actions-demo/.github/workflows/deplyEKS.yml@main
