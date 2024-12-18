@@ -18,4 +18,4 @@ jobs:
 
   call-reusable2:
     if: ${{ github.event.inputs.user_input == 'AWS' }}
-    uses: m9ksh1t/github-actions-demo/.github/workflows/deplyEKS.yml@main
+    uses: m9ksh1t/github-actions-demo/.github/workflows/deployEKS.yml@main
