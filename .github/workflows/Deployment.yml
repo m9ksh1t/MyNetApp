@@ -1,0 +1,37 @@
+name: Deployment to AKS or EKS
+
+on:
+  push:
+    branches:
+      - 'feature/*'
+
+jobs:
+  decide-and-call:
+    runs-on: ubuntu-latest
+    outputs:
+      cloud_provider: ${{ steps.extract.outputs.cloud_provider }}
+    steps:
+      - name: Extract Cloud Provider from Branch Name
+        id: extract
+        run: |
+          branch_name=${GITHUB_REF##*/}
+          echo "Branch name: $branch_name"
+          if [[ "$branch_name" == *azure* ]]; then
+            echo "cloud_provider=Azure" >> $GITHUB_OUTPUT
+          elif [[ "$branch_name" == *aws* ]]; then
+            echo "cloud_provider=AWS" >> $GITHUB_OUTPUT
+          else
+            echo "Unknown cloud provider. Exiting."
+            exit 1
+          fi
+        shell: bash
+
+  call-azure:
+    needs: decide-and-call
+    if: ${{ needs.decide-and-call.outputs.cloud_provider == 'Azure' }}
+    uses: m9ksh1t/MyNetApp/.github/workflows/deploy.yml@master
+
+  call-aws:
+    needs: decide-and-call
+    if: ${{ needs.decide-and-call.outputs.cloud_provider == 'AWS' }}
+    uses: m9ksh1t/MyNetApp/.github/workflows/deployEKS.yml@master
