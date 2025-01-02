@@ -63,7 +63,7 @@ jobs:
         run: |
           kubectl set image deployment/myapp-deployment myapp=bhhelloworld.azurecr.io/myapp:${{ github.sha }}
  
-      # Step 9: Deploy to App Service (Optional)
+      # Step 9: Deploy to App Service (Optional) hehelol
       - name: Deploy to Azure Web App Service
         uses: azure/webapps-deploy@v2
         with:
