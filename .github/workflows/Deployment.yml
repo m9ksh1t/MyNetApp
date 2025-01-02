@@ -29,7 +29,7 @@ jobs:
   call-azure:
     needs: decide-and-call
     if: ${{ needs.decide-and-call.outputs.cloud_provider == 'Azure' }}
-    uses: m9ksh1t/MyNetApp/.github/workflows/deploy.yml@master
+    uses: m9ksh1t/MyNetApp/.github/workflows/deployAKS.yml@master
 
   call-aws:
     needs: decide-and-call

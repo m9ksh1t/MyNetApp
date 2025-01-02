@@ -52,7 +52,7 @@ jobs:
           docker tag myapp:latest 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ github.sha }}
           docker push 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ github.sha }}
  
-      # Step 8: Deploy to EKS hehelol
+      # Step 8: Deploy to EKS hehelolllllll
       - name: Update kubeconfig for EKS
         run: |
           aws eks update-kubeconfig --region eu-north-1 --name my-eks-cluster
