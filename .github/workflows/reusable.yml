@@ -16,7 +16,6 @@ jobs:
   deploy-to-cloud:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Determine Deployment Target
       - name: Check Deployment Target
         run: |
           echo "Deploying to ${{ inputs.cloud_provider }} with image ${{ inputs.image_tag }}"
@@ -27,18 +26,91 @@ jobs:
           else
             echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
             exit 1
-          fi
  
-      # Step 2: Deploy to Azure
-      - name: Deploy to Azure
+      # Azure deployment steps
+      - name: Checkout code for Azure
+        if: env.target == 'azure'
+        uses: actions/checkout@v3
+ 
+      - name: Setup .NET for Azure
+        if: env.target == 'azure'
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+ 
+      - name: Build project for Azure
+        if: env.target == 'azure'
+        run: dotnet build --configuration Release -o ./MyNetApp/output
+ 
+      - name: Publish project for Azure
+        if: env.target == 'azure'
+        run: dotnet publish -c Release -o ./MyNetApp/output
+ 
+      - name: Log in to Azure
+        if: env.target == 'azure'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+ 
+      - name: Build Docker image for Azure
         if: env.target == 'azure'
         run: |
-          echo "Deploying to Azure..."
-          # Azure-specific commands go here
+          docker build -t bhhelloworld.azurecr.io/myapp:${{ inputs.image_tag }} ./MyNetApp
  
-      # Step 3: Deploy to AWS
-      - name: Deploy to AWS
+      - name: Push Docker image to Azure Container Registry
+        if: env.target == 'azure'
+        run: |
+          az acr login --name ${{ secrets.ACR_NAME }}
+          docker push bhhelloworld.azurecr.io/myapp:${{ inputs.image_tag }}
+ 
+      - name: Deploy to AKS
+        if: env.target == 'azure'
+        run: |
+          az aks install-cli
+          az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
+          kubectl set image deployment/myapp-deployment myapp=bhhelloworld.azurecr.io/myapp:${{ inputs.image_tag }}
+ 
+      # AWS deployment steps
+      - name: Checkout code for AWS
+        if: env.target == 'aws'
+        uses: actions/checkout@v3
+ 
+      - name: Setup .NET for AWS
+        if: env.target == 'aws'
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+ 
+      - name: Build project for AWS
+        if: env.target == 'aws'
+        run: dotnet build --configuration Release -o ./MyNetApp/output
+ 
+      - name: Publish project for AWS
+        if: env.target == 'aws'
+        run: dotnet publish -c Release -o ./MyNetApp/output
+ 
+      - name: Configure AWS CLI
+        if: env.target == 'aws'
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+ 
+      - name: Build Docker image for AWS
         if: env.target == 'aws'
         run: |
-          echo "Deploying to AWS..."
-          # AWS-specific commands go here
+          docker build -t myapp:latest ./MyNetApp
+ 
+      - name: Push Docker image to Amazon ECR
+        if: env.target == 'aws'
+        run: |
+          aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 994536024037.dkr.ecr.eu-north-1.amazonaws.com
+          docker tag myapp:latest 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ inputs.image_tag }}
+          docker push 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ inputs.image_tag }}
+ 
+      - name: Deploy to EKS
+        if: env.target == 'aws'
+        run: |
+          aws eks update-kubeconfig --region eu-north-1 --name my-eks-cluster
+          kubectl apply -f deploymentEKS.yml
