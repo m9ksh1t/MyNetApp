@@ -26,6 +26,7 @@ jobs:
           else
             echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
             exit 1
+          fi
  
       # Azure deployment steps
       - name: Checkout code for Azure
