@@ -1,0 +1,44 @@
+name: Reusable Deployment Workflow
+ 
+on:
+  workflow_call:
+    inputs:
+      cloud_provider:
+        description: 'Target Cloud Provider (Azure or AWS)'
+        required: true
+        type: string
+      image_tag:
+        description: 'Tag of the Docker image to deploy'
+        required: true
+        type: string
+ 
+jobs:
+  deploy-to-cloud:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Determine Deployment Target
+      - name: Check Deployment Target
+        run: |
+          echo "Deploying to ${{ inputs.cloud_provider }} with image ${{ inputs.image_tag }}"
+          if [[ "${{ inputs.cloud_provider }}" == "Azure" ]]; then
+            echo "target=azure" >> $GITHUB_ENV
+          elif [[ "${{ inputs.cloud_provider }}" == "AWS" ]]; then
+            echo "target=aws" >> $GITHUB_ENV
+          else
+            echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
+            exit 1
+          fi
+ 
+      # Step 2: Deploy to Azure
+      - name: Deploy to Azure
+        if: env.target == 'azure'
+        run: |
+          echo "Deploying to Azure..."
+          # Azure-specific commands go here
+ 
+      # Step 3: Deploy to AWS
+      - name: Deploy to AWS
+        if: env.target == 'aws'
+        run: |
+          echo "Deploying to AWS..."
+          # AWS-specific commands go here
