@@ -6,7 +6,7 @@ on:
       cloud_provider:
         description: 'Target Cloud Provider (Azure or AWS)'
         required: true
-        default: 'Azure'
+        #default: 'Azure'
  
 jobs:
   build-and-containerize:
