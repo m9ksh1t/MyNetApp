@@ -60,20 +60,3 @@ jobs:
             echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
             exit 1
           fi
-      
-      - name: Deploy to WebApp
-        run: |
-          if [[ "${{ inputs.cloud_provider }}" == "Azure" ]]; then
-            echo "Deploying to Azure Web App Service..."
-            uses: azure/webapps-deploy@v2
-            with:
-              app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-              slot-name: production
-              images: bhhelloworld.azurecr.io/myapp:${{ github.sha }}
-          elif [[ "${{ inputs.cloud_provider }}" == "AWS" ]]; then
-            echo "Deploying to AWS..."
-          else
-            echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
-            exit 1
-          fi
- 
