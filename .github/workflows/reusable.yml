@@ -52,19 +52,20 @@ jobs:
       # Deployment Steps (Separate for Azure and AWS)
       - name: Deploy to Cloud
         run: |
-          if [[ "${{ inputs.cloud_provider }}" == "Azure" ]]; then
-            echo "Deploying to Azure..."
-            az aks install-cli
-            az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
-            kubectl set image deployment/myapp-deployment myapp=bhhelloworld.azurecr.io/myapp:${{ github.sha }}
-          elif [[ "${{ inputs.cloud_provider }}" == "AWS" ]]; then
-            echo "Deploying to AWS..."
-            aws eks update-kubeconfig --region eu-north-1 --name my-eks-cluster
-            kubectl apply -f deploymentEKS.yml
-          else
-            echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
-            exit 1
-          fi
+          echo "Deploying to Azure..."
+          # if [[ "${{ inputs.cloud_provider }}" == "Azure" ]]; then
+          #   echo "Deploying to Azure..."
+          #   az aks install-cli
+          #   az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
+          #   kubectl set image deployment/myapp-deployment myapp=bhhelloworld.azurecr.io/myapp:${{ github.sha }}
+          # elif [[ "${{ inputs.cloud_provider }}" == "AWS" ]]; then
+          #   echo "Deploying to AWS..."
+          #   aws eks update-kubeconfig --region eu-north-1 --name my-eks-cluster
+          #   kubectl apply -f deploymentEKS.yml
+          # else
+          #   echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
+          #   exit 1
+          # fi
       
       - name: Deploy to WebApp
         run: |
