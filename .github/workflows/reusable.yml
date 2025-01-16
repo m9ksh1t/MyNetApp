@@ -13,6 +13,28 @@ on:
         type: string
  
 jobs:
+  build-and-containerize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+ 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+ 
+      - name: Build project
+        run: dotnet build --configuration Release -o ./MyNetApp/output
+ 
+      - name: Publish project
+        run: dotnet publish -c Release -o ./MyNetApp/output
+ 
+      - name: Build Docker image
+        run: |
+          docker build -t myapp:${{ github.sha }} ./MyNetApp
+
+  # Cloud deployment based on input by user (Azure or AWS)
   deploy-to-cloud:
     runs-on: ubuntu-latest
     steps:
