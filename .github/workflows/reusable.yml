@@ -32,11 +32,21 @@ jobs:
       - name: Push Docker Image
         run: |
           if [[ "${{ inputs.cloud_provider }}" == "Azure" ]]; then
+            echo "Logging in to Azure..."
+            uses: azure/login@v1
+            with:
+              creds: ${{ secrets.AZURE_CREDENTIALS }}
             echo "Pushing image to Azure Container Registry..."
             az acr login --name ${{ secrets.ACR_NAME }}
             docker tag myapp:${{ github.sha }} bhhelloworld.azurecr.io/myapp:${{ github.sha }}
             docker push bhhelloworld.azurecr.io/myapp:${{ github.sha }}
           elif [[ "${{ inputs.cloud_provider }}" == "AWS" ]]; then
+            echo "Configuring AWS CLI..."
+            uses: aws-actions/configure-aws-credentials@v3
+            with:
+              aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+              aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+              aws-region: eu-north-1
             echo "Pushing image to Amazon ECR..."
             aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 994536024037.dkr.ecr.eu-north-1.amazonaws.com
             docker tag myapp:${{ github.sha }} 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ github.sha }}
