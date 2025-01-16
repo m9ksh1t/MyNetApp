@@ -9,34 +9,7 @@ on:
         default: 'Azure'
  
 jobs:
-  build-and-containerize:
-    runs-on: ubuntu-latest
-    steps:
-      # Step 1: Checkout Code
-      - name: Checkout code
-        uses: actions/checkout@v3
- 
-      # Step 2: Setup .NET
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0'
- 
-      # Step 3: Build the application
-      - name: Build project
-        run: dotnet build --configuration Release -o ./MyNetApp/output
- 
-      # Step 4: Publish the artifact
-      - name: Publish project
-        run: dotnet publish -c Release -o ./MyNetApp/output
- 
-      # Step 5: Build Docker Image
-      - name: Build Docker image
-        run: |
-          docker build -t myapp:${{ github.sha }} ./MyNetApp
- 
   call-reusable:
-    needs: build-and-containerize
     uses: m9ksh1t/MyNetApp/.github/workflows/reusable.yml@master
     with:
       cloud_provider: ${{ github.event.inputs.cloud_provider }}
