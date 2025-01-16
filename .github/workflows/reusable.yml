@@ -13,28 +13,29 @@ jobs:
       # Common Steps for Code Checkout and Build
       - name: Checkout Code
         uses: actions/checkout@v3
- 
+        
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0'
- 
+          
       - name: Build project
         run: dotnet build --configuration Release -o ./MyNetApp/output
- 
+        
       - name: Publish project
         run: dotnet publish -c Release -o ./MyNetApp/output
-      # Common Docker Build Step
+        
       - name: Build Docker Image
         run: |
           docker build -t myapp:${{ github.sha }} ./MyNetApp
-
-      # Login 
+ 
+      # Login (Conditional for Azure or AWS)
       - name: Log in to Azure
         if: ${{ inputs.cloud_provider == 'Azure' }}
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+ 
       - name: Configure AWS CLI
         if: ${{ inputs.cloud_provider == 'AWS' }}
         uses: aws-actions/configure-aws-credentials@v3
@@ -42,7 +43,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
-          
+ 
       # Push Docker Image to Registry (Conditional for Azure or AWS)
       - name: Push Docker Image
         run: |
@@ -59,6 +60,7 @@ jobs:
           else
             echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
           fi
+ 
       # Deployment Steps (Separate for Azure and AWS)
       - name: Deploy to Cloud
         run: |
