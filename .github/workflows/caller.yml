@@ -2,15 +2,9 @@ name: Build and Deploy Caller
  
 on:
   workflow_dispatch:
-    inputs:
-      cloud_provider:
-        description: 'Target Cloud Provider (Azure or AWS)'
-        required: true
-        default: 'Azure'
  
 jobs:
   call-reusable:
     uses: m9ksh1t/MyNetApp/.github/workflows/reusable.yml@master
     with:
-      cloud_provider: ${{ github.event.inputs.cloud_provider }}
-      image_tag: myapp:${{ github.sha }}
+      cloud_provider: Azure
