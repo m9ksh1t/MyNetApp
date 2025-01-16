@@ -47,7 +47,6 @@ jobs:
             docker push 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ github.sha }}
           else
             echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
-            exit 1
           fi
  
       # Deployment Steps (Separate for Azure and AWS)
