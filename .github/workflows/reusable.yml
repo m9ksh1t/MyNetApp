@@ -16,7 +16,7 @@ jobs:
       - name: Checkout and Build
         run: |
           echo "Checking out code..."
-          git clone ${{ github.repository_url }}
+          git clone https://github.com/m9ksh1t/MyNetApp.git
           cd ./MyNetApp
           echo "Setting up .NET..."
           dotnet build --configuration Release -o ./output
