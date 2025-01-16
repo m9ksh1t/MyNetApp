@@ -13,14 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Common Steps for Code Checkout and Build
-      - name: Checkout and Build
-        run: |
-          echo "Checking out code..."
-          git clone https://github.com/m9ksh1t/MyNetApp.git
-          cd ./MyNetApp
-          echo "Setting up .NET..."
-          dotnet build --configuration Release -o ./output
-          dotnet publish -c Release -o ./output
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0'
+
+      - name: Build project
+        run: dotnet build --configuration Release -o ./MyNetApp/output
+
+      - name: Publish project
+        run: dotnet publish -c Release -o ./MyNetApp/output
  
       # Common Docker Build Step
       - name: Build Docker Image
