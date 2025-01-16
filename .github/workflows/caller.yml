@@ -7,4 +7,4 @@ jobs:
   call-reusable:
     uses: m9ksh1t/MyNetApp/.github/workflows/reusable.yml@master
     with:
-      cloud_provider: Azure
+      cloud_provider: AWS
