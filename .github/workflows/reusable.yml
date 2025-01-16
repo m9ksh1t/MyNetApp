@@ -7,133 +7,57 @@ on:
         description: 'Target Cloud Provider (Azure or AWS)'
         required: true
         type: string
-      image_tag:
-        description: 'Tag of the Docker image to deploy'
-        required: true
-        type: string
  
 jobs:
-  build-and-containerize:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      # Common Steps for Code Checkout and Build
+      - name: Checkout and Build
+        run: |
+          echo "Checking out code..."
+          git clone ${{ github.repository_url }}
+          cd ./MyNetApp
+          echo "Setting up .NET..."
+          dotnet build --configuration Release -o ./output
+          dotnet publish -c Release -o ./output
  
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0'
- 
-      - name: Build project
-        run: dotnet build --configuration Release -o ./MyNetApp/output
- 
-      - name: Publish project
-        run: dotnet publish -c Release -o ./MyNetApp/output
- 
-      - name: Build Docker image
+      # Common Docker Build Step
+      - name: Build Docker Image
         run: |
           docker build -t myapp:${{ github.sha }} ./MyNetApp
-
-  # Cloud deployment based on input by user (Azure or AWS)
-  deploy-to-cloud:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check Deployment Target
+ 
+      # Push Docker Image to Registry (Conditional for Azure or AWS)
+      - name: Push Docker Image
         run: |
-          echo "Deploying to ${{ inputs.cloud_provider }} with image ${{ inputs.image_tag }}"
           if [[ "${{ inputs.cloud_provider }}" == "Azure" ]]; then
-            echo "target=azure" >> $GITHUB_ENV
+            echo "Pushing image to Azure Container Registry..."
+            az acr login --name ${{ secrets.ACR_NAME }}
+            docker tag myapp:${{ github.sha }} bhhelloworld.azurecr.io/myapp:${{ github.sha }}
+            docker push bhhelloworld.azurecr.io/myapp:${{ github.sha }}
           elif [[ "${{ inputs.cloud_provider }}" == "AWS" ]]; then
-            echo "target=aws" >> $GITHUB_ENV
+            echo "Pushing image to Amazon ECR..."
+            aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 994536024037.dkr.ecr.eu-north-1.amazonaws.com
+            docker tag myapp:${{ github.sha }} 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ github.sha }}
+            docker push 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ github.sha }}
           else
             echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
             exit 1
           fi
  
-      # Azure deployment steps
-      - name: Checkout code for Azure
-        if: env.target == 'azure'
-        uses: actions/checkout@v3
- 
-      - name: Setup .NET for Azure
-        if: env.target == 'azure'
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0'
- 
-      - name: Build project for Azure
-        if: env.target == 'azure'
-        run: dotnet build --configuration Release -o ./MyNetApp/output
- 
-      - name: Publish project for Azure
-        if: env.target == 'azure'
-        run: dotnet publish -c Release -o ./MyNetApp/output
- 
-      - name: Log in to Azure
-        if: env.target == 'azure'
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
- 
-      - name: Build Docker image for Azure
-        if: env.target == 'azure'
+      # Deployment Steps (Separate for Azure and AWS)
+      - name: Deploy to Cloud
         run: |
-          docker build -t bhhelloworld.azurecr.io/myapp:${{ inputs.image_tag }} ./MyNetApp
- 
-      - name: Push Docker image to Azure Container Registry
-        if: env.target == 'azure'
-        run: |
-          az acr login --name ${{ secrets.ACR_NAME }}
-          docker push bhhelloworld.azurecr.io/myapp:${{ inputs.image_tag }}
- 
-      - name: Deploy to AKS
-        if: env.target == 'azure'
-        run: |
-          az aks install-cli
-          az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
-          kubectl set image deployment/myapp-deployment myapp=bhhelloworld.azurecr.io/myapp:${{ inputs.image_tag }}
- 
-      # AWS deployment steps
-      - name: Checkout code for AWS
-        if: env.target == 'aws'
-        uses: actions/checkout@v3
- 
-      - name: Setup .NET for AWS
-        if: env.target == 'aws'
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0'
- 
-      - name: Build project for AWS
-        if: env.target == 'aws'
-        run: dotnet build --configuration Release -o ./MyNetApp/output
- 
-      - name: Publish project for AWS
-        if: env.target == 'aws'
-        run: dotnet publish -c Release -o ./MyNetApp/output
- 
-      - name: Configure AWS CLI
-        if: env.target == 'aws'
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-north-1
- 
-      - name: Build Docker image for AWS
-        if: env.target == 'aws'
-        run: |
-          docker build -t myapp:latest ./MyNetApp
- 
-      - name: Push Docker image to Amazon ECR
-        if: env.target == 'aws'
-        run: |
-          aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 994536024037.dkr.ecr.eu-north-1.amazonaws.com
-          docker tag myapp:latest 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ inputs.image_tag }}
-          docker push 994536024037.dkr.ecr.eu-north-1.amazonaws.com/myapp:${{ inputs.image_tag }}
- 
-      - name: Deploy to EKS
-        if: env.target == 'aws'
-        run: |
-          aws eks update-kubeconfig --region eu-north-1 --name my-eks-cluster
-          kubectl apply -f deploymentEKS.yml
+          if [[ "${{ inputs.cloud_provider }}" == "Azure" ]]; then
+            echo "Deploying to Azure..."
+            az aks install-cli
+            az aks get-credentials --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} --name ${{ secrets.AKS_CLUSTER_NAME }}
+            kubectl set image deployment/myapp-deployment myapp=bhhelloworld.azurecr.io/myapp:${{ github.sha }}
+          elif [[ "${{ inputs.cloud_provider }}" == "AWS" ]]; then
+            echo "Deploying to AWS..."
+            aws eks update-kubeconfig --region eu-north-1 --name my-eks-cluster
+            kubectl apply -f deploymentEKS.yml
+          else
+            echo "Invalid cloud provider: ${{ inputs.cloud_provider }}"
+            exit 1
+          fi
