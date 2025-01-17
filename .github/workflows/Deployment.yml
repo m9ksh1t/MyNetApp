@@ -1,4 +1,4 @@
-name: Deployment to AKS or EKS
+name: Deployment to cloud through branch name
 
 on:
   push:
