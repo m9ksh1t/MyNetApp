@@ -1,4 +1,4 @@
-name: Build and Deploy Caller
+name: Cloud deployment through input
  
 on:
   workflow_dispatch:
