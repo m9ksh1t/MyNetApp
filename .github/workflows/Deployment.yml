@@ -1,4 +1,4 @@
-name: CLoud deployment using branch_name
+name: Cloud deployment using branch_name
 
 on:
   push:
