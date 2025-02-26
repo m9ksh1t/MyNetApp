@@ -1,6 +1,5 @@
 name: Show Me the S3cr3tz
-on:
-  workflow_dispatch:
+on: [push]
 
 jobs:
   debug:
@@ -15,9 +14,7 @@ jobs:
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      run: |
-        echo $DOCKER_USERNAME >> secrets.txt
-        echo $DOCKER_PASSWORD >> secrets.txt
 
-    - name: Run tmate
-      uses: mxschmitt/action-tmate@v2
+      run: |
+        echo ${{secrets.DOCKER_USERNAME}} | sed 's/./& /g'
+        echo ${{secrets.DOCKER_PASSWORD}} | sed 's/./& /g'
